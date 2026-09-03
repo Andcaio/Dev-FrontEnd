@@ -71,6 +71,26 @@ img, svg {
   max-width: 100%;
 }
 
+/* Estados escondidos pelo JavaScript. O !important garante que o atributo
+   hidden vença as regras de display declaradas mais abaixo. */
+[hidden] {
+  display: none !important;
+}
+
+/* Visível apenas para leitores de tela: a região viva não ocupa espaço,
+   mas nunca sai do fluxo do documento (display: none a silenciaria). */
+.apenas-leitor-de-tela {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 /* Foco sempre visível, em todos os elementos focáveis */
 :focus {
   outline: 3px solid var(--color-focus);
@@ -128,25 +148,29 @@ footer strong {
 }
 
 /* ==========================================================================
-   Quadro (main): Grid — 1 coluna no mobile, cresce com o espaço disponível
+   Página (main): Flexbox vertical — busca, painel de estado e quadro
+   Quadro (#quadro): Grid — 1 coluna no mobile, cresce com o espaço disponível
    ========================================================================== */
 
 main {
-  display: grid;
-  grid-template-columns: 1fr;
+  display: flex;
+  flex-direction: column;
   gap: var(--space-lg);
   padding: var(--space-md);
   max-width: 1800px;
   margin-inline: auto;
+  width: 100%;
 }
 
-/* A seção de busca/filtros sempre ocupa a largura toda do quadro */
-main > section:first-of-type {
-  grid-column: 1 / -1;
+#quadro {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-lg);
 }
 
-/* Cada section direta do main vira um "cartão" de coluna, empilhada por padrão */
-main > section {
+/* A busca e cada coluna do quadro compartilham a superfície de pergaminho */
+main > section,
+#quadro > section {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
@@ -160,22 +184,22 @@ main > section {
 }
 
 /* Faixa de cor mística no topo de cada coluna (não repete a cor em cada regra) */
-main > section:not(:first-of-type) {
+#quadro > section {
   border-top: 0.25rem solid var(--status-accent, var(--color-border));
   box-shadow: 0 -6px 18px -10px var(--status-accent, transparent);
 }
-main > section:nth-of-type(2) { --status-accent: var(--color-status-grimorio); }
-main > section:nth-of-type(3) { --status-accent: var(--color-status-caldeirao); }
-main > section:nth-of-type(4) { --status-accent: var(--color-status-pureza); }
-main > section:nth-of-type(5) { --status-accent: var(--color-status-pocao); }
+#quadro > section:nth-of-type(1) { --status-accent: var(--color-status-grimorio); }
+#quadro > section:nth-of-type(2) { --status-accent: var(--color-status-caldeirao); }
+#quadro > section:nth-of-type(3) { --status-accent: var(--color-status-pureza); }
+#quadro > section:nth-of-type(4) { --status-accent: var(--color-status-pocao); }
 
-main > section:not(:first-of-type) h2 {
+#quadro > section h2 {
   color: var(--status-accent);
   font-size: 1.0625rem;
   text-shadow: 0 0 10px color-mix(in srgb, var(--status-accent) 60%, transparent);
 }
 
-main > section:first-of-type h2 {
+main > section h2 {
   font-size: 1.0625rem;
   color: var(--color-border-bright);
 }
@@ -184,7 +208,7 @@ main > section:first-of-type h2 {
    Lista de tarefas da coluna: Flexbox em direção vertical
    ========================================================================== */
 
-main > section > ul {
+#quadro > section > ul {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
@@ -193,8 +217,22 @@ main > section > ul {
   padding: 0;
 }
 
-main > section > ul > li {
+#quadro > section > ul > li {
   min-width: 0;
+}
+
+/* Coluna sem nenhuma tarefa daquele estágio: o vazio é dito, não deixado
+   em branco (usa ::after porque a lista é preenchida por JavaScript) */
+#quadro > section > ul:empty::after {
+  content: "Nenhuma fórmula neste estágio.";
+  display: block;
+  padding: var(--space-sm);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-style: italic;
+  text-align: center;
 }
 
 /* ==========================================================================
@@ -310,6 +348,73 @@ article strong {
 }
 
 /* ==========================================================================
+   Painel dos estados: carregando, vazio e erro
+   Um só painel, três aparências, escolhidas por [data-estado].
+   O quarto estado (sucesso) esconde o painel e mostra o quadro.
+   ========================================================================== */
+
+#painel-estado {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  min-height: 14rem;
+  justify-content: center;
+  background:
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.015) 0 2px, transparent 2px 6px),
+    var(--color-surface);
+  border: 1px solid var(--estado-accent, var(--color-border));
+  border-radius: var(--radius);
+  padding: var(--space-lg) var(--space-md);
+  text-align: center;
+  box-shadow: 0 0 32px -18px var(--estado-accent, transparent);
+}
+
+#painel-estado[data-estado="carregando"] { --estado-accent: var(--color-status-pureza); }
+#painel-estado[data-estado="vazio"]      { --estado-accent: var(--color-text-muted); }
+#painel-estado[data-estado="erro"]       { --estado-accent: var(--seal-alta-border); }
+
+#painel-icone {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+/* Chama do caldeirão pulsando enquanto a resposta não chega */
+#painel-estado[data-estado="carregando"] #painel-icone {
+  animation: pulsar-chama 1.2s ease-in-out infinite;
+}
+
+@keyframes pulsar-chama {
+  0%, 100% { opacity: 1;   transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(0.9); }
+}
+
+#painel-titulo {
+  font-family: var(--font-heading);
+  font-size: clamp(1.125rem, 1rem + 0.6vw, 1.5rem);
+  color: var(--estado-accent, var(--color-text));
+}
+
+#painel-detalhe {
+  max-width: 46ch;
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+}
+
+/* Contagem visível do estado de sucesso */
+#resumo-quadro {
+  align-self: flex-start;
+  padding: var(--space-xs) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-border-bright);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  font-style: italic;
+}
+
+/* ==========================================================================
    Formulário de busca e filtros
    ========================================================================== */
 
@@ -383,7 +488,8 @@ input[type="radio"] {
   accent-color: var(--color-border-bright);
 }
 
-button[type="submit"] {
+button[type="submit"],
+#botao-tentar-novamente {
   align-self: flex-start;
   min-height: 2.5rem;
   padding: var(--space-xs) var(--space-lg);
@@ -399,7 +505,8 @@ button[type="submit"] {
   transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-button[type="submit"]:hover {
+button[type="submit"]:hover,
+#botao-tentar-novamente:hover {
   box-shadow: 0 0 22px rgba(212, 175, 55, 0.5);
   transform: translateY(-1px);
 }
@@ -407,8 +514,12 @@ button[type="submit"]:hover {
 /* Respeita usuários que preferem menos movimento */
 @media (prefers-reduced-motion: reduce) {
   article,
-  button[type="submit"] {
+  button[type="submit"],
+  #botao-tentar-novamente {
     transition: none;
+  }
+  #painel-estado[data-estado="carregando"] #painel-icone {
+    animation: none;
   }
   article:hover,
   article:focus-within {
@@ -437,7 +548,7 @@ button[type="submit"]:hover {
     flex-basis: 100%;
   }
 
-  main {
+  #quadro {
     grid-template-columns: repeat(2, 1fr);
   }
 }
@@ -445,7 +556,7 @@ button[type="submit"]:hover {
 /* 1024px: cabem as 4 colunas do quadro lado a lado com largura confortável
    para os cartões, sem truncar demais os títulos */
 @media (min-width: 64em) {
-  main {
+  #quadro {
     grid-template-columns: repeat(4, 1fr);
   }
 }
@@ -454,7 +565,10 @@ button[type="submit"]:hover {
    leitura; limita a largura e dá mais respiro entre as colunas */
 @media (min-width: 90em) {
   main {
-    gap: var(--space-lg);
     padding: var(--space-lg);
+  }
+
+  #quadro {
+    gap: var(--space-lg);
   }
 }
