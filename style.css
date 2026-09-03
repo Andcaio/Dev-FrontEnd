@@ -401,6 +401,12 @@ article strong {
   font-size: 0.9375rem;
 }
 
+/* O painel centraliza tudo, inclusive o botão de refazer */
+#painel-estado #botao-tentar-novamente {
+  align-self: center;
+  margin-top: var(--space-xs);
+}
+
 /* Contagem visível do estado de sucesso */
 #resumo-quadro {
   align-self: flex-start;
