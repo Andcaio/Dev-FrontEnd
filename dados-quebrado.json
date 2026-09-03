@@ -1,0 +1,13 @@
+{
+  "tarefas": [
+    {
+      "id": 1,
+      "titulo": "Transmutação de Chumbo em Ouro",
+      "status": "a-fazer",
+      "prioridade": "alta",
+      "prazo": "2026-08-20",
+      "disciplina": "Academia Arcana de Administração",
+      "responsavel": "Ana Silva"
+    },
+  ]
+}
