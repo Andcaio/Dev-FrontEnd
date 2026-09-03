@@ -8,9 +8,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=MedievalSharp&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <title>Laboratório de Alquimia &amp; Feitiçaria</title>
+    <script type="module" src="js/app.js"></script>
 </head>
 <body>
-    <header>
+  <header>
     <h1>Laboratório de Alquimia &amp; Feitiçaria</h1>
   </header>
 
@@ -59,105 +60,54 @@
       </form>
     </section>
 
-    <!-- Agrupamento 1: Grimório / Receitas -->
-    <section aria-labelledby="status-grimorio">
-      <h2 id="status-grimorio">📜 Grimório / Receitas</h2>
-      <ul>
-        <li>
-          <article>
-            <h3>Transmutação de Chumbo em Ouro</h3>
-            <p><strong>Escola de Alquimia:</strong> Academia Arcana de Administração</p>
-            <p><strong>Alquimista:</strong> Ana Silva</p>
-            <p><strong>Prazo:</strong> <time datetime="2026-08-20">20/08/2026</time></p>
-            <p data-prioridade="alta"><strong>Potência:</strong> Extrema</p>
-          </article>
-        </li>
-        <li>
-          <article>
-           <h3>Elixir de Adivinhação de Resultados</h3>
-            <p><strong>Escola de Alquimia:</strong> Portal das Runas Acadêmicas</p>
-            <p><strong>Alquimista:</strong> Carlos Eduardo</p>
-            <p><strong>Prazo:</strong> <time datetime="2026-08-25">25/08/2026</time></p>
-            <p data-prioridade="media"><strong>Potência:</strong> Moderada</p>
-          </article>
-        </li>
-      </ul>
-    </section>
+    <!-- Região viva: existe desde o primeiro byte do documento e nasce vazia.
+         O JavaScript preenche o texto a cada troca de estado, e o leitor de
+         tela anuncia a mudança sem interromper o que a pessoa está fazendo. -->
+    <p id="regiao-status" class="apenas-leitor-de-tela" role="status" aria-live="polite"></p>
 
-    <!-- Agrupamento 2: No Caldeirão -->
-    <section aria-labelledby="status-caldeirao">
-      <h2 id="status-caldeirao">🧪 No Caldeirão</h2>
-      <ul>
-        <li>
-          <article>
-            <h3>Esboço do Familiar Arcano</h3>
-            <p><strong>Escola de Alquimia:</strong> Grimório Itinerante</p>
-            <p><strong>Alquimista:</strong> Beatriz Lima</p>
-            <p><strong>Prazo:</strong> <time datetime="2026-08-15">15/08/2026</time></p>
-            <p data-prioridade="alta"><strong>Potência:</strong> Extrema</p>
-          </article>
-        </li>
-        <li>
-          <article>
-            <h3>Selagem do Cofre de Segredos</h3>
-            <p><strong>Escola de Alquimia:</strong> Torre de Infraestrutura Mística</p>
-            <p><strong>Alquimista:</strong> Diego Alves</p>
-            <p><strong>Prazo:</strong> <time datetime="2026-08-18">18/08/2026</time></p>
-            <p data-prioridade="baixa"><strong>Potência:</strong> Baixa</p>
-          </article>
-        </li>
-      </ul>
-    </section>
+    <!-- Painel dos estados de carregando, vazio e erro. Nasce escondido; o
+         JavaScript acende exatamente um estado por vez. -->
+    <div id="painel-estado" hidden>
+      <p id="painel-icone" aria-hidden="true"></p>
+      <p id="painel-titulo"></p>
+      <p id="painel-detalhe"></p>
+      <button type="button" id="botao-tentar-novamente" hidden>Refazer o ritual</button>
+    </div>
 
-    <!-- Agrupamento 3: Teste de Pureza -->
-    <section aria-labelledby="status-pureza">
-      <h2 id="status-pureza">🔍 Teste de Pureza</h2>
-      <ul>
-        <li>
-          <article>
-            <h3>Inspeção dos Pergaminhos de Fundação</h3>
-            <p><strong>Escola de Alquimia:</strong> Academia Arcana de Administração</p>
-            <p><strong>Alquimista:</strong> Fernanda Rocha</p>
-            <p><strong>Prazo:</strong> <time datetime="2026-08-12">12/08/2026</time></p>
-            <p data-prioridade="media"><strong>Potência:</strong> Moderada</p>
-          </article>
-        </li>
-        <li>
-          <article>
-            <h3>Purificação do Compêndio de Exigências</h3>
-            <p><strong>Escola de Alquimia:</strong> Portal das Runas Acadêmicas</p>
-            <p><strong>Alquimista:</strong> Gabriel Santos</p>
-            <p><strong>Prazo:</strong> <time datetime="2026-08-14">14/08/2026</time></p>
-            <p data-prioridade="alta"><strong>Potência:</strong> Extrema</p>
-          </article>
-        </li>
-      </ul>
-    </section>
+    <!-- Contagem visível do estado de sucesso. -->
+    <p id="resumo-quadro" hidden></p>
 
-    <!-- Agrupamento 4: Poção Pronta -->
-    <section aria-labelledby="status-pocao">
-      <h2 id="status-pocao">✨ Poção Pronta</h2>
-      <ul>
-        <li>
-          <article>
-            <h3>Poção da Clarividência de Requisitos</h3>
-            <p><strong>Escola de Alquimia:</strong> Portal das Runas Acadêmicas</p>
-            <p><strong>Alquimista:</strong> Helena Castro</p>
-            <p><strong>Prazo:</strong> <time datetime="2026-08-01">01/08/2026</time></p>
-            <p data-prioridade="media"><strong>Potência:</strong> Moderada</p>
-          </article>
-        </li>
-        <li>
-          <article>
-            <h3>Ritual de Invocação do Projeto</h3>
-            <p><strong>Escola de Alquimia:</strong> Grimório Itinerante</p>
-            <p><strong>Alquimista:</strong> Igor Pereira</p>
-            <p><strong>Prazo:</strong> <time datetime="2026-08-05">05/08/2026</time></p>
-            <p data-prioridade="baixa"><strong>Potência:</strong> Baixa</p>
-          </article>
-        </li>
-      </ul>
-    </section>
+    <noscript>
+      <p>Este laboratório precisa de JavaScript habilitado para consultar o grimório de fórmulas.</p>
+    </noscript>
+
+    <!-- Quadro: as quatro colunas nascem vazias e são preenchidas por
+         renderizacao.js a partir do array devolvido por api.js. -->
+    <div id="quadro" hidden>
+      <!-- Agrupamento 1: Grimório / Receitas -->
+      <section aria-labelledby="status-grimorio">
+        <h2 id="status-grimorio">📜 Grimório / Receitas</h2>
+        <ul data-lista-status="a-fazer"></ul>
+      </section>
+
+      <!-- Agrupamento 2: No Caldeirão -->
+      <section aria-labelledby="status-caldeirao">
+        <h2 id="status-caldeirao">🧪 No Caldeirão</h2>
+        <ul data-lista-status="em-andamento"></ul>
+      </section>
+
+      <!-- Agrupamento 3: Teste de Pureza -->
+      <section aria-labelledby="status-pureza">
+        <h2 id="status-pureza">🔍 Teste de Pureza</h2>
+        <ul data-lista-status="em-revisao"></ul>
+      </section>
+
+      <!-- Agrupamento 4: Poção Pronta -->
+      <section aria-labelledby="status-pocao">
+        <h2 id="status-pocao">✨ Poção Pronta</h2>
+        <ul data-lista-status="concluida"></ul>
+      </section>
+    </div>
   </main>
 
   <footer>
