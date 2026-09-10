@@ -145,16 +145,21 @@ function sincronizarControles() {
   }
 }
 
-/* Uma nova renderização substitui os cartões por outros iguais. Se o foco
-   do teclado estava em um botão de cartão, ele cairia no <body> e a pessoa
-   perderia o lugar na página. A chave data-chave-foco sobrevive à troca dos
-   nós e permite devolver o foco exatamente onde ele estava.
+/* Uma nova renderização substitui todos os cartões por outros iguais, e por
+   um instante o quadro fica vazio. Duas coisas se perdem nessa troca se
+   ninguém cuidar delas: o foco do teclado, que cai no <body> quando o
+   elemento focado deixa de existir, e a posição de rolagem, que o navegador
+   recalcula quando o documento encolhe e cresce.
 
-   Devolver o foco ao mesmo lugar não é movê-lo: é impedir que a
-   renderização o mova. */
-function preservandoOFoco(desenhar) {
+   Guardar as duas antes e devolvê-las depois não é mover o foco nem rolar a
+   página: é impedir que a renderização faça isso. Quem clicou em "Ver
+   detalhes" no fim da terceira coluna continua olhando para a terceira
+   coluna. */
+function preservandoOLugar(desenhar) {
   const ativo = document.activeElement;
   const chave = quadro.contains(ativo) ? ativo.dataset.chaveFoco : null;
+  const rolagemX = window.scrollX;
+  const rolagemY = window.scrollY;
 
   desenhar();
 
@@ -163,6 +168,14 @@ function preservandoOFoco(desenhar) {
     /* preventScroll: o elemento voltou para o mesmo ponto da página; não há
        motivo para o navegador rolar a tela por causa disso. */
     substituto?.focus({ preventScroll: true });
+  }
+
+  /* Ler scrollY aqui força o navegador a recalcular o layout, então este é
+     o valor real depois da troca. Se ele mudou, devolve o anterior — e se a
+     lista encolheu tanto que a posição antiga não existe mais, o próprio
+     navegador limita ao fim da página, que é o comportamento certo. */
+  if (window.scrollX !== rolagemX || window.scrollY !== rolagemY) {
+    window.scrollTo(rolagemX, rolagemY);
   }
 }
 
@@ -199,7 +212,7 @@ function atualizarTela() {
      discordar. */
   const visiveis = derivarTarefasVisiveis(estado);
 
-  preservandoOFoco(() => {
+  preservandoOLugar(() => {
     if (visiveis.length === 0) {
       renderizarEstado(ESTADOS.SEM_RESULTADO, { total: estado.tarefas.length });
       return;

@@ -155,11 +155,14 @@ parâmetro `?fonte=` troca apenas o caminho passado a `carregarTarefas()`.
 - `#regiao-status` tem `role="status"` e `aria-live="polite"`, está no HTML
   desde o início e nasce vazio; só o JavaScript escreve nele. A cada ciclo ele
   recebe "Mostrando N de M fórmulas" ou a mensagem do estado da vez.
-- **A atualização dos resultados não move o foco.** Escrever na região viva não
-  desloca o cursor de teclado, e quando uma nova renderização substitui o botão
-  de um cartão, `app.js` devolve o foco ao botão equivalente pelo atributo
-  `data-chave-foco`. Devolver o foco ao mesmo lugar não é movê-lo: é impedir
-  que a renderização o mova.
+- **A atualização dos resultados não move o foco nem a página.** Escrever na
+  região viva não desloca o cursor de teclado, e quando uma nova renderização
+  substitui o botão de um cartão, `app.js` devolve o foco ao botão equivalente
+  pelo atributo `data-chave-foco` e restaura a posição de rolagem. Sem isso,
+  abrir os detalhes de um cartão no fim da terceira coluna podia jogar a leitura
+  para o topo, porque o quadro esvazia por um instante durante a troca dos
+  cartões. Devolver foco e rolagem ao mesmo lugar não é movê-los: é impedir que
+  a renderização os mova.
 - Nenhum `tabindex` positivo. A ordem de tabulação é a ordem do HTML.
 - Os botões de detalhe informam o próprio estado por `aria-expanded`, e o
   triângulo do CSS acompanha esse atributo — o visual e o anunciado não divergem.
