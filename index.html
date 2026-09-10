@@ -19,16 +19,17 @@
     <!-- Região de Busca e Filtros -->
     <section aria-labelledby="titulo-busca-filtros">
       <h2 id="titulo-busca-filtros">🔮 Pesquisa Arcana</h2>
-      <form role="search">
+      <form role="search" id="formulario-filtros" novalidate>
         <p>
           <label for="busca-titulo">Buscar por nome da poção ou feitiço:</label>
-          <input type="search" id="busca-titulo" name="busca">
+          <input type="search" id="busca-titulo" name="busca"
+                 autocomplete="off" placeholder="ex.: elixir">
         </p>
 
         <p>
           <label for="filtro-status">Filtrar por estágio alquímico:</label>
           <select id="filtro-status" name="status">
-            <option value="">Todos os Estágios</option>
+            <option value="todos">Todos os Estágios</option>
             <option value="a-fazer">📜 Grimório / Receitas</option>
             <option value="em-andamento">🧪 No Caldeirão</option>
             <option value="em-revisao">🔍 Teste de Pureza</option>
@@ -36,7 +37,16 @@
           </select>
         </p>
 
-        <fieldset>
+        <p>
+          <label for="ordenacao">Ordenar por prazo:</label>
+          <select id="ordenacao" name="ordenacao">
+            <option value="grimorio">Ordem do grimório</option>
+            <option value="prazo-crescente">Prazo mais próximo primeiro</option>
+            <option value="prazo-decrescente">Prazo mais distante primeiro</option>
+          </select>
+        </p>
+
+        <fieldset id="grupo-prioridade">
           <legend>Potência Mágica</legend>
           <label for="prio-todas">
             <input type="radio" id="prio-todas" name="prioridade" value="todas" checked>
@@ -56,7 +66,7 @@
           </label>
         </fieldset>
 
-        <button type="submit">Conjurar Filtros</button>
+        <button type="button" id="limpar-filtros" class="botao">Limpar filtros</button>
       </form>
     </section>
 
@@ -71,7 +81,7 @@
       <p id="painel-icone" aria-hidden="true"></p>
       <p id="painel-titulo"></p>
       <p id="painel-detalhe"></p>
-      <button type="button" id="botao-tentar-novamente" hidden>Refazer o ritual</button>
+      <button type="button" id="botao-tentar-novamente" class="botao" hidden>Refazer o ritual</button>
     </div>
 
     <!-- Contagem visível do estado de sucesso. -->
