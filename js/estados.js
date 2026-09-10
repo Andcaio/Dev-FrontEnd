@@ -46,6 +46,21 @@ const TELAS = {
   }
 };
 
+/* Quem aparece em cada estado, declarado de uma vez.
+   Antes daqui o código escondia os quatro elementos e o estado da vez
+   reacendia o seu. O resultado era o mesmo na tela, mas no ciclo em que o
+   quadro continua visível ele saía e voltava ao layout no meio da
+   renderização — e um documento que encolhe e cresce dentro do mesmo quadro
+   de vídeo faz o navegador recalcular (e às vezes perder) a posição de
+   rolagem. Escrevendo o valor final de uma vez, o quadro nunca sai do lugar. */
+const VISIBILIDADE = {
+  [ESTADOS.CARREGANDO]:    { painel: true,  quadro: false, resumo: false, refazer: false },
+  [ESTADOS.VAZIO]:         { painel: true,  quadro: false, resumo: false, refazer: false },
+  [ESTADOS.SEM_RESULTADO]: { painel: true,  quadro: false, resumo: true,  refazer: false },
+  [ESTADOS.ERRO]:          { painel: true,  quadro: false, resumo: false, refazer: true  },
+  [ESTADOS.SUCESSO]:       { painel: false, quadro: true,  resumo: true,  refazer: false }
+};
+
 /* Busca os elementos a cada chamada: o módulo não guarda referências de DOM. */
 function obterElementos() {
   return {
@@ -60,12 +75,12 @@ function obterElementos() {
   };
 }
 
-/* Todo texto entra por textContent. Nunca por innerHTML. */
+/* Todo texto entra por textContent. Nunca por innerHTML.
+   Só preenche: quem decide se o painel aparece é a tabela VISIBILIDADE. */
 function preencherPainel(el, { icone, titulo, detalhe }) {
   el.painelIcone.textContent = icone;
   el.painelTitulo.textContent = titulo;
   el.painelDetalhe.textContent = detalhe;
-  el.painel.hidden = false;
 }
 
 /* A região viva já existe e está vazia no HTML; aqui ela só recebe texto.
@@ -101,11 +116,12 @@ export function renderizarEstado(estado, dados) {
 
   const el = obterElementos();
 
-  /* Ponto de partida comum: esconde tudo e o estado escolhido acende o seu. */
-  el.painel.hidden = true;
-  el.quadro.hidden = true;
-  el.resumo.hidden = true;
-  el.botaoTentarNovamente.hidden = true;
+  /* Exatamente um estado por vez, com o valor final de cada elemento. */
+  const visivel = VISIBILIDADE[estado];
+  el.painel.hidden = !visivel.painel;
+  el.quadro.hidden = !visivel.quadro;
+  el.resumo.hidden = !visivel.resumo;
+  el.botaoTentarNovamente.hidden = !visivel.refazer;
   el.painel.dataset.estado = estado;
 
   if (estado === ESTADOS.ERRO) {
@@ -115,7 +131,6 @@ export function renderizarEstado(estado, dados) {
       titulo: mensagem ?? "O ritual falhou.",
       detalhe: detalhe ?? "Não foi possível carregar as fórmulas."
     });
-    el.botaoTentarNovamente.hidden = false;
     anunciar(el, `Erro ao carregar as fórmulas. ${mensagem ?? ""}`.trim());
     return;
   }
@@ -139,7 +154,6 @@ export function renderizarEstado(estado, dados) {
     });
     /* O quadro fica escondido, mas a contagem continua visível: é ela que
        mostra, em número, que o filtro zerou a lista sem perder o total. */
-    el.resumo.hidden = false;
     el.resumo.textContent = fraseDeContagem(0, total);
     anunciar(el, `Nenhuma fórmula encontrada. ${fraseDeContagem(0, total)}`);
     return;
@@ -152,9 +166,6 @@ export function renderizarEstado(estado, dados) {
   const total = dados?.total ?? visiveis.length;
 
   renderizarTarefas(visiveis, { detalhesAbertos: dados?.detalhesAbertos });
-
-  el.quadro.hidden = false;
-  el.resumo.hidden = false;
 
   const texto = fraseDeContagem(visiveis.length, total);
   el.resumo.textContent = texto;
