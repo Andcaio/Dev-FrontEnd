@@ -274,7 +274,7 @@ article h3 {
 }
 
 /* Potência mágica: selo de cera circular, logo abaixo do título */
-article p:nth-of-type(4) {
+article > p:nth-of-type(4) {
   order: 2;
   align-self: flex-start;
 }
@@ -322,19 +322,19 @@ article p[data-prioridade="alta"] {
 }
 
 /* Escola de Alquimia e Alquimista: corpo do cartão */
-article p:nth-of-type(1) {
+article > p:nth-of-type(1) {
   order: 3;
   color: var(--color-text-muted);
   font-size: 0.875rem;
 }
-article p:nth-of-type(2) {
+article > p:nth-of-type(2) {
   order: 4;
   color: var(--color-text-muted);
   font-size: 0.875rem;
 }
 
 /* Prazo: sempre na base do cartão */
-article p:nth-of-type(3) {
+article > p:nth-of-type(3) {
   order: 5;
   margin-top: auto;
   padding-top: var(--space-xs);
@@ -345,6 +345,71 @@ article p:nth-of-type(3) {
 article strong {
   color: var(--color-text);
   font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   Detalhes do cartão: o botão e o bloco que ele abre.
+   Os dois entram depois do prazo (que tem margin-top: auto), por isso ficam
+   colados na base do cartão.
+   -------------------------------------------------------------------------- */
+
+.botao-cartao {
+  order: 6;
+  align-self: flex-start;
+  min-height: 2rem;
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--color-border-bright);
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.botao-cartao:hover {
+  border-color: var(--color-border-bright);
+  background: rgba(212, 175, 55, 0.08);
+}
+
+/* O botão informa sozinho se está aberto ou fechado: o seta acompanha o
+   aria-expanded, então o estado visual e o estado anunciado nunca divergem. */
+.botao-cartao::before {
+  content: "▸ ";
+}
+.botao-cartao[aria-expanded="true"]::before {
+  content: "▾ ";
+}
+
+.detalhes-cartao {
+  order: 7;
+  border-top: 1px dashed var(--color-border);
+  padding-top: var(--space-xs);
+  font-size: 0.8125rem;
+}
+
+/* Rótulo e valor lado a lado, quebrando para duas linhas quando não couber */
+.detalhes-cartao dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.125rem var(--space-xs);
+  margin: 0;
+}
+
+.detalhes-cartao dt {
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.detalhes-cartao dt::after {
+  content: ":";
+}
+
+.detalhes-cartao dd {
+  margin: 0;
+  min-width: 0;
+  color: var(--color-text);
 }
 
 /* ==========================================================================
@@ -372,6 +437,7 @@ article strong {
 
 #painel-estado[data-estado="carregando"] { --estado-accent: var(--color-status-pureza); }
 #painel-estado[data-estado="vazio"]      { --estado-accent: var(--color-text-muted); }
+#painel-estado[data-estado="sem-resultado"] { --estado-accent: var(--color-status-pureza); }
 #painel-estado[data-estado="erro"]       { --estado-accent: var(--seal-alta-border); }
 
 #painel-icone {
@@ -494,8 +560,7 @@ input[type="radio"] {
   accent-color: var(--color-border-bright);
 }
 
-button[type="submit"],
-#botao-tentar-novamente {
+.botao {
   align-self: flex-start;
   min-height: 2.5rem;
   padding: var(--space-xs) var(--space-lg);
@@ -511,8 +576,7 @@ button[type="submit"],
   transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-button[type="submit"]:hover,
-#botao-tentar-novamente:hover {
+.botao:hover {
   box-shadow: 0 0 22px rgba(212, 175, 55, 0.5);
   transform: translateY(-1px);
 }
@@ -520,8 +584,8 @@ button[type="submit"]:hover,
 /* Respeita usuários que preferem menos movimento */
 @media (prefers-reduced-motion: reduce) {
   article,
-  button[type="submit"],
-  #botao-tentar-novamente {
+  .botao,
+  .botao-cartao {
     transition: none;
   }
   #painel-estado[data-estado="carregando"] #painel-icone {

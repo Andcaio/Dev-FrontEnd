@@ -1,11 +1,17 @@
 /* ==========================================================================
-   estados.js — decide qual das quatro telas está valendo (E3)
+   estados.js — decide qual tela está valendo
    --------------------------------------------------------------------------
-   A tela tem quatro estados: carregando, sucesso, vazio e erro.
-   Este módulo aplica um deles por vez e garante que nunca sobre tela em
-   branco: ou o painel de estado aparece, ou o quadro de cartões aparece.
+   Na E3 a tela tinha quatro estados. A E4 acrescentou o quinto, e ele é o
+   mais fácil de confundir com um erro: "sem resultado". O grimório chegou
+   inteiro, a rede funcionou, nada falhou — só que os critérios escolhidos
+   não encontram nenhuma fórmula. Isso não é falha, é resposta, e por isso
+   tem painel próprio, mensagem própria e nunca passa pelo catch.
 
-   Não faz requisição. Recebe o que precisa por parâmetro.
+   Este módulo aplica exatamente um estado por vez e garante que nunca sobre
+   tela em branco: ou o painel aparece, ou o quadro de cartões aparece.
+
+   Não faz requisição, não filtra e não lê controles. Recebe tudo por
+   parâmetro, já decidido por quem chamou.
    ========================================================================== */
 
 import { renderizarTarefas } from "./renderizacao.js";
@@ -14,12 +20,16 @@ export const ESTADOS = Object.freeze({
   CARREGANDO: "carregando",
   SUCESSO: "sucesso",
   VAZIO: "vazio",
+  SEM_RESULTADO: "sem-resultado",
   ERRO: "erro"
 });
 
 const ESTADOS_VALIDOS = Object.values(ESTADOS);
 
-/* Textos fixos das telas que não dependem dos dados recebidos. */
+/* Textos fixos das telas que não dependem dos dados recebidos.
+   Vazio e sem-resultado dizem coisas diferentes de propósito: o primeiro
+   fala do laboratório, o segundo fala dos critérios. Trocar um pelo outro
+   manda a pessoa procurar o problema no lugar errado. */
 const TELAS = {
   [ESTADOS.CARREGANDO]: {
     icone: "⏳",
@@ -58,7 +68,9 @@ function preencherPainel(el, { icone, titulo, detalhe }) {
   el.painel.hidden = false;
 }
 
-/* A região viva já existe e está vazia no HTML; aqui ela só recebe texto. */
+/* A região viva já existe e está vazia no HTML; aqui ela só recebe texto.
+   Escrever nela não move o foco de lugar nenhum: o leitor de tela anuncia
+   a mudança sem interromper quem está digitando na busca. */
 function anunciar(el, texto) {
   el.regiaoStatus.textContent = texto;
 }
@@ -67,13 +79,20 @@ function plural(quantidade, singular, plural_) {
   return quantidade === 1 ? singular : plural_;
 }
 
+/* "3 de 10 fórmulas" — a mesma frase alimenta a contagem visível e o
+   anúncio da região viva, para que ninguém receba números diferentes. */
+function fraseDeContagem(visiveis, total) {
+  return `Mostrando ${visiveis} de ${total} ${plural(total, "fórmula", "fórmulas")}.`;
+}
+
 /**
- * Aplica um dos quatro estados da tela.
+ * Aplica um dos cinco estados da tela.
  *
- * @param {"carregando"|"sucesso"|"vazio"|"erro"} estado
- * @param {Array<object>|{mensagem: string, detalhe: string}} [dados]
- *        no sucesso, o array de tarefas;
- *        no erro, o objeto com mensagem e detalhe já escolhidos pelo chamador.
+ * @param {"carregando"|"sucesso"|"vazio"|"sem-resultado"|"erro"} estado
+ * @param {object} [dados]
+ *        sucesso:       { visiveis: Array<object>, total: number, detalhesAbertos?: Set }
+ *        sem-resultado: { total: number }
+ *        erro:          { mensagem: string, detalhe: string } já escolhidos pelo chamador
  */
 export function renderizarEstado(estado, dados) {
   if (!ESTADOS_VALIDOS.includes(estado)) {
@@ -108,14 +127,36 @@ export function renderizarEstado(estado, dados) {
     return;
   }
 
-  /* Sucesso: o quadro é desenhado por renderizacao.js e a contagem é dita. */
-  const tarefas = Array.isArray(dados) ? dados : [];
-  const desenhadas = renderizarTarefas(tarefas);
+  if (estado === ESTADOS.SEM_RESULTADO) {
+    const total = dados?.total ?? 0;
+    preencherPainel(el, {
+      icone: "🔎",
+      titulo: "Nenhuma fórmula corresponde à busca",
+      detalhe:
+        `${total} ${plural(total, "fórmula catalogada continua", "fórmulas catalogadas continuam")} no grimório; ` +
+        "nenhuma delas atende aos critérios atuais. Ajuste a busca, o estágio ou a potência — " +
+        'ou use o botão "Limpar filtros" para ver todas de novo.'
+    });
+    /* O quadro fica escondido, mas a contagem continua visível: é ela que
+       mostra, em número, que o filtro zerou a lista sem perder o total. */
+    el.resumo.hidden = false;
+    el.resumo.textContent = fraseDeContagem(0, total);
+    anunciar(el, `Nenhuma fórmula encontrada. ${fraseDeContagem(0, total)}`);
+    return;
+  }
+
+  /* Sucesso: o quadro é desenhado por renderizacao.js a partir da lista já
+     derivada, e a contagem sai dessa mesma lista — cartões e número nunca
+     saem de fontes diferentes. */
+  const visiveis = Array.isArray(dados?.visiveis) ? dados.visiveis : [];
+  const total = dados?.total ?? visiveis.length;
+
+  renderizarTarefas(visiveis, { detalhesAbertos: dados?.detalhesAbertos });
 
   el.quadro.hidden = false;
   el.resumo.hidden = false;
 
-  const texto = `${desenhadas} ${plural(desenhadas, "fórmula catalogada", "fórmulas catalogadas")} no laboratório.`;
+  const texto = fraseDeContagem(visiveis.length, total);
   el.resumo.textContent = texto;
   anunciar(el, texto);
 }
